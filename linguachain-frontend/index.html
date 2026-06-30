@@ -1,0 +1,1321 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LinguaChain — Learn & Earn on Stellar</title>
+
+  <!-- =====================================================
+       HARICI KAYNAKLAR
+       - Space Grotesk: Display/başlık fontu (geometrik, teknik his)
+       - Inter: Body/UI fontu (okunabilirlik)
+       - Stellar SDK: Testnet işlemleri için resmi SDK
+       - Freighter API: Cüzdan bağlantısı için
+  ===================================================== -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+
+  <!-- Stellar JavaScript SDK (CDN) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/stellar-sdk/11.2.2/stellar-sdk.min.js"></script>
+
+  <!-- Freighter Wallet API (CDN) -->
+  <script src="https://cdn.jsdelivr.net/npm/@stellar/freighter-api@1.7.1/build/index.min.js"></script>
+
+  <style>
+    /* =====================================================
+       CSS CUSTOM PROPERTIES (TASARIM SİSTEMİ)
+       Tüm renkler, font-size'lar ve boşluklar buradan yönetilir.
+    ===================================================== */
+    :root {
+      /* Renk Paleti */
+      --bg-deep:       #0A1628;      /* Sayfa arka planı — derin lacivert */
+      --bg-card:       #111E36;      /* Kart arka planı */
+      --bg-card-hover: #162645;      /* Kart hover durumu */
+      --bg-input:      #0D1930;      /* Input arka planı */
+      --accent-gold:   #F5A623;      /* Ana vurgu — altın/amber */
+      --accent-blue:   #4A9EFF;      /* İkincil vurgu — parlak mavi */
+      --accent-green:  #2ECC8A;      /* Başarı rengi */
+      --accent-red:    #FF5A6E;      /* Hata rengi */
+      --text-primary:  #E8F0FE;      /* Ana metin — buz beyazı */
+      --text-secondary:#8FA3C7;      /* İkincil metin — soluk mavi */
+      --text-muted:    #4A637D;      /* Pasif metin */
+      --border-subtle: rgba(74, 158, 255, 0.15);  /* İnce kenarlık */
+      --border-active: rgba(74, 158, 255, 0.45);  /* Aktif kenarlık */
+      --star-glow:     rgba(245, 166, 35, 0.3);   /* Stellar yıldızı glow */
+
+      /* Tipografi Ölçeği */
+      --font-display: 'Space Grotesk', sans-serif;
+      --font-body:    'Inter', sans-serif;
+      --fs-xs:   0.75rem;
+      --fs-sm:   0.875rem;
+      --fs-base: 1rem;
+      --fs-lg:   1.125rem;
+      --fs-xl:   1.5rem;
+      --fs-2xl:  2rem;
+      --fs-3xl:  2.75rem;
+
+      /* Köşe Yuvarlaklıkları */
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 22px;
+      --radius-xl: 32px;
+
+      /* Gölgeler */
+      --shadow-card: 0 4px 24px rgba(0,0,0,0.4), 0 1px 4px rgba(0,0,0,0.3);
+      --shadow-gold: 0 0 28px rgba(245, 166, 35, 0.25);
+      --shadow-blue: 0 0 24px rgba(74, 158, 255, 0.2);
+    }
+
+    /* =====================================================
+       RESET & TEMEL STILLER
+    ===================================================== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--font-body);
+      background-color: var(--bg-deep);
+      color: var(--text-primary);
+      min-height: 100vh;
+      /* Arka plan: ince bir ızgara deseni (grid pattern) */
+      background-image:
+        radial-gradient(circle at 20% 20%, rgba(74,158,255,0.06) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(245,166,35,0.05) 0%, transparent 50%),
+        linear-gradient(rgba(74,158,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(74,158,255,0.03) 1px, transparent 1px);
+      background-size: 100% 100%, 100% 100%, 48px 48px, 48px 48px;
+    }
+
+    /* =====================================================
+       ÜST BAR (HEADER / NAV)
+    ===================================================== */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 clamp(1rem, 4vw, 3rem);
+      height: 68px;
+      background: rgba(10, 22, 40, 0.85);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    /* Logo: dönen Stellar yıldızı — sayfanın imza elementi */
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: var(--fs-lg);
+      color: var(--text-primary);
+      text-decoration: none;
+    }
+
+    .logo-star {
+      width: 32px;
+      height: 32px;
+      animation: star-spin 12s linear infinite;
+      filter: drop-shadow(0 0 8px var(--accent-gold));
+    }
+
+    /* Stellar yıldızı sürekli yavaşça döner */
+    @keyframes star-spin {
+      from { transform: rotate(0deg); }
+      to   { transform: rotate(360deg); }
+    }
+
+    .logo-text { letter-spacing: -0.02em; }
+    .logo-text span { color: var(--accent-gold); }
+
+    /* Üst bar sağ taraf: cüzdan butonları */
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    /* =====================================================
+       BUTON BİLEŞENLERİ
+    ===================================================== */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 9px 20px;
+      border-radius: var(--radius-sm);
+      font-family: var(--font-body);
+      font-size: var(--fs-sm);
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s ease;
+      letter-spacing: 0.01em;
+    }
+
+    .btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      transform: none !important;
+    }
+
+    /* Birincil buton: Connect Freighter */
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent-gold), #E09010);
+      color: #0A1628;
+    }
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-gold);
+    }
+
+    /* İkincil buton (outline) */
+    .btn-outline {
+      background: transparent;
+      color: var(--accent-red);
+      border: 1px solid var(--accent-red);
+    }
+    .btn-outline:hover:not(:disabled) {
+      background: rgba(255, 90, 110, 0.1);
+    }
+
+    /* İşlem butonu: büyük, mavi */
+    .btn-action {
+      width: 100%;
+      justify-content: center;
+      padding: 14px 24px;
+      background: linear-gradient(135deg, var(--accent-blue), #2563EB);
+      color: white;
+      border-radius: var(--radius-md);
+      font-size: var(--fs-base);
+    }
+    .btn-action:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-blue);
+    }
+
+    /* =====================================================
+       ANA İÇERİK ALANI
+    ===================================================== */
+    main {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: clamp(1.5rem, 4vw, 3rem) clamp(1rem, 3vw, 2rem);
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+
+    /* =====================================================
+       HERO BAŞLIK
+    ===================================================== */
+    .hero {
+      text-align: center;
+      padding: clamp(1.5rem, 4vw, 3rem) 0 0;
+    }
+
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 14px;
+      border-radius: 100px;
+      background: rgba(74, 158, 255, 0.1);
+      border: 1px solid var(--border-subtle);
+      font-size: var(--fs-xs);
+      font-weight: 600;
+      color: var(--accent-blue);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 20px;
+    }
+
+    .hero h1 {
+      font-family: var(--font-display);
+      font-size: clamp(var(--fs-2xl), 5vw, var(--fs-3xl));
+      font-weight: 700;
+      line-height: 1.15;
+      letter-spacing: -0.03em;
+      margin-bottom: 14px;
+    }
+
+    .hero h1 .highlight {
+      background: linear-gradient(135deg, var(--accent-gold), #FF8C42);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero p {
+      color: var(--text-secondary);
+      font-size: var(--fs-base);
+      max-width: 520px;
+      margin: 0 auto;
+      line-height: 1.65;
+    }
+
+    /* =====================================================
+       KART BİLEŞENİ (Temel kart stili)
+    ===================================================== */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: clamp(1.25rem, 3vw, 2rem);
+      box-shadow: var(--shadow-card);
+    }
+
+    .card-label {
+      font-size: var(--fs-xs);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+    }
+
+    /* =====================================================
+       CÜZDAN PROFİL KARTI
+       Cüzdan bağlıyken görünür, "flip" animasyonuyla açılır.
+    ===================================================== */
+    #wallet-card {
+      display: none;  /* Başta gizli; cüzdan bağlanınca gösterilir */
+      animation: card-reveal 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    }
+
+    /* Kart açılma animasyonu */
+    @keyframes card-reveal {
+      from {
+        opacity: 0;
+        transform: translateY(-12px) scale(0.96);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    #wallet-card.visible { display: block; }
+
+    .wallet-inner {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    /* Cüzdan ikonu avatarı */
+    .wallet-avatar {
+      width: 54px;
+      height: 54px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent-gold), #FF8C42);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      flex-shrink: 0;
+      box-shadow: 0 0 20px rgba(245,166,35,0.3);
+    }
+
+    .wallet-info { flex: 1; min-width: 200px; }
+
+    .wallet-pubkey {
+      font-family: var(--font-display);
+      font-size: var(--fs-sm);
+      font-weight: 500;
+      color: var(--text-primary);
+      word-break: break-all;
+      margin-bottom: 6px;
+    }
+
+    /* Public key'in ilk/son 8 karakteri vurgulanır */
+    .wallet-pubkey .key-highlight { color: var(--accent-blue); font-weight: 700; }
+
+    .wallet-balance {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      background: rgba(46, 204, 138, 0.12);
+      border: 1px solid rgba(46, 204, 138, 0.25);
+      border-radius: 100px;
+      font-size: var(--fs-sm);
+      font-weight: 600;
+      color: var(--accent-green);
+    }
+
+    .balance-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--accent-green);
+      animation: pulse-dot 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%       { opacity: 0.5; transform: scale(0.75); }
+    }
+
+    /* =====================================================
+       ÇEVİRİ PANELİ
+    ===================================================== */
+    .translation-panel .card-label { margin-bottom: 20px; }
+
+    /* Dil ve seviye seçim grid'i */
+    .selectors-row {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr auto;
+      gap: 12px;
+      align-items: end;
+      margin-bottom: 22px;
+    }
+
+    /* Ok işareti (kaynak → hedef) */
+    .arrow-divider {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding-bottom: 2px;
+      color: var(--text-muted);
+      font-size: var(--fs-xl);
+      line-height: 1;
+    }
+
+    /* Form label */
+    .form-label {
+      display: block;
+      font-size: var(--fs-xs);
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: 7px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    /* Select ve Input ortak stiller */
+    .form-select,
+    .form-input,
+    .form-textarea {
+      width: 100%;
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      color: var(--text-primary);
+      font-family: var(--font-body);
+      font-size: var(--fs-sm);
+      padding: 10px 14px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      outline: none;
+      appearance: none;
+    }
+
+    .form-select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%234A9EFF' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      padding-right: 34px;
+      cursor: pointer;
+    }
+
+    .form-select:focus,
+    .form-input:focus,
+    .form-textarea:focus {
+      border-color: var(--border-active);
+      box-shadow: 0 0 0 3px rgba(74, 158, 255, 0.12);
+    }
+
+    .form-select option { background: #111E36; }
+
+    /* Metinler arası bölüm */
+    .texts-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 22px;
+    }
+
+    .text-block-label {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    /* Örnek metin kutusu (salt okunur) */
+    .source-text-box {
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 14px;
+      min-height: 160px;
+      font-size: var(--fs-sm);
+      line-height: 1.7;
+      color: var(--text-secondary);
+      position: relative;
+    }
+
+    /* Seviye etiketi (A1, B2 vb.) */
+    .level-badge {
+      display: inline-flex;
+      padding: 3px 10px;
+      border-radius: 100px;
+      background: rgba(245, 166, 35, 0.15);
+      border: 1px solid rgba(245, 166, 35, 0.3);
+      font-size: var(--fs-xs);
+      font-weight: 700;
+      color: var(--accent-gold);
+      letter-spacing: 0.06em;
+    }
+
+    /* Kullanıcı çeviri alanı */
+    .form-textarea {
+      resize: vertical;
+      min-height: 160px;
+      line-height: 1.7;
+    }
+
+    /* Seviye seçimi — sağa itilmiş küçük alan */
+    .level-selector-wrapper {
+      display: flex;
+      align-items: end;
+      gap: 8px;
+    }
+
+    /* =====================================================
+       ÖDEME BÖLÜMÜ
+    ===================================================== */
+    .payment-section .form-input { margin-bottom: 0; }
+
+    /* =====================================================
+       GERİ BİLDİRİM PANELİ
+    ===================================================== */
+    #feedback-panel {
+      display: none;  /* Başlangıçta gizli */
+      animation: fade-in 0.3s ease both;
+    }
+
+    #feedback-panel.visible { display: block; }
+
+    @keyframes fade-in {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Başarı durumu */
+    .feedback-success {
+      border-color: rgba(46, 204, 138, 0.3) !important;
+      background: rgba(46, 204, 138, 0.05) !important;
+    }
+
+    /* Hata durumu */
+    .feedback-error {
+      border-color: rgba(255, 90, 110, 0.3) !important;
+      background: rgba(255, 90, 110, 0.05) !important;
+    }
+
+    .feedback-icon {
+      font-size: 2rem;
+      margin-bottom: 10px;
+    }
+
+    .feedback-title {
+      font-family: var(--font-display);
+      font-size: var(--fs-lg);
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .feedback-success .feedback-title { color: var(--accent-green); }
+    .feedback-error   .feedback-title { color: var(--accent-red); }
+
+    .feedback-message {
+      font-size: var(--fs-sm);
+      color: var(--text-secondary);
+      line-height: 1.6;
+      margin-bottom: 14px;
+    }
+
+    /* İşlem hash linki */
+    .tx-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: var(--fs-xs);
+      font-weight: 600;
+      color: var(--accent-blue);
+      text-decoration: none;
+      padding: 6px 14px;
+      border-radius: var(--radius-sm);
+      background: rgba(74, 158, 255, 0.1);
+      border: 1px solid rgba(74, 158, 255, 0.2);
+      transition: all 0.2s;
+      word-break: break-all;
+    }
+
+    .tx-link:hover {
+      background: rgba(74, 158, 255, 0.18);
+      transform: translateY(-1px);
+    }
+
+    /* =====================================================
+       YÜKLEME SPINNER
+    ===================================================== */
+    .spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255,255,255,0.25);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* =====================================================
+       FOOTER
+    ===================================================== */
+    footer {
+      text-align: center;
+      padding: 2rem 1rem 3rem;
+      font-size: var(--fs-xs);
+      color: var(--text-muted);
+      border-top: 1px solid var(--border-subtle);
+      margin-top: 1rem;
+    }
+
+    footer a { color: var(--accent-blue); text-decoration: none; }
+
+    /* =====================================================
+       RESPONSIVE AYARLAR
+    ===================================================== */
+    @media (max-width: 640px) {
+      .selectors-row {
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: auto auto;
+      }
+      .arrow-divider { display: none; }
+      .texts-row { grid-template-columns: 1fr; }
+      .level-selector-wrapper { grid-column: 1 / -1; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .logo-star      { animation: none; }
+      .balance-dot    { animation: none; }
+      .btn:hover      { transform: none; }
+    }
+
+    /* =====================================================
+       NETWORK ETİKETİ (Testnet rozeti)
+    ===================================================== */
+    .network-badge {
+      font-size: var(--fs-xs);
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 100px;
+      background: rgba(245, 166, 35, 0.12);
+      border: 1px solid rgba(245, 166, 35, 0.25);
+      color: var(--accent-gold);
+      letter-spacing: 0.06em;
+    }
+
+    /* Bilgi tooltip benzeri küçük not */
+    .info-note {
+      font-size: var(--fs-xs);
+      color: var(--text-muted);
+      margin-top: 8px;
+      line-height: 1.5;
+    }
+
+    /* Disconnect butonunu başta gizle */
+    #btn-disconnect { display: none; }
+  </style>
+</head>
+
+<body>
+
+  <!-- =====================================================
+       ÜST BAR
+       Sol: Logo + Testnet rozeti
+       Sağ: Connect / Disconnect butonları
+  ===================================================== -->
+  <header>
+    <a href="#" class="logo">
+      <!-- İmza element: SVG yıldız döner -->
+      <svg class="logo-star" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M16 2 L19.1 12.2 L30 12.2 L21.4 18.5 L24.5 28.7 L16 22.4 L7.5 28.7 L10.6 18.5 L2 12.2 L12.9 12.2 Z"
+          fill="#F5A623" opacity="0.9"/>
+      </svg>
+      <span class="logo-text">Lingua<span>Chain</span></span>
+    </a>
+
+    <div class="header-actions">
+      <span class="network-badge">TESTNET</span>
+
+      <!-- Freighter bağlantı butonu -->
+      <button class="btn btn-primary" id="btn-connect">
+        🔗 Connect Freighter
+      </button>
+
+      <!-- Bağlantı kesme butonu — başlangıçta gizlidir -->
+      <button class="btn btn-outline" id="btn-disconnect">
+        ✕ Disconnect
+      </button>
+    </div>
+  </header>
+
+  <!-- =====================================================
+       ANA İÇERİK
+  ===================================================== -->
+  <main>
+
+    <!-- HERO BAŞLIK -->
+    <div class="hero">
+      <div class="hero-eyebrow">
+        ⭐ Stellar Testnet · Learn & Earn
+      </div>
+      <h1>
+        Çeviri Yap,<br>
+        <span class="highlight">XLM Kazan</span>
+      </h1>
+      <p>
+        Türkçe, İngilizce ve Almanca arasında çapraz çeviri yap.
+        Başarılı çevirilerin için eğitmenlere sembolik XLM bahşiş gönder,
+        öğrenirken Stellar blok zincirine katkı sağla.
+      </p>
+    </div>
+
+    <!-- =====================================================
+         CÜZDAN PROFİL KARTI
+         ID="wallet-card" — başta display:none, bağlanınca gösterilir
+    ===================================================== -->
+    <div class="card" id="wallet-card">
+      <p class="card-label">🪐 Bağlı Cüzdan</p>
+      <div class="wallet-inner">
+        <div class="wallet-avatar">⭐</div>
+        <div class="wallet-info">
+          <!-- Public Key görüntüleme alanı -->
+          <div class="wallet-pubkey" id="wallet-pubkey-display">
+            <!-- JavaScript tarafından doldurulacak -->
+          </div>
+          <!-- XLM Bakiye görüntüleme alanı -->
+          <div class="wallet-balance">
+            <span class="balance-dot"></span>
+            <span id="wallet-balance-display">... XLM</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- =====================================================
+         ÇEVİRİ PANELİ
+    ===================================================== -->
+    <div class="card translation-panel">
+      <p class="card-label">📚 Çeviri Görevi</p>
+
+      <!-- Dil seçimi satırı -->
+      <div class="selectors-row">
+
+        <!-- Kaynak Dil -->
+        <div>
+          <label class="form-label" for="source-lang">Kaynak Dil</label>
+          <select class="form-select" id="source-lang">
+            <option value="tr">🇹🇷 Türkçe</option>
+            <option value="en">🇬🇧 İngilizce</option>
+            <option value="de">🇩🇪 Almanca</option>
+          </select>
+        </div>
+
+        <!-- Ok işareti -->
+        <div class="arrow-divider">→</div>
+
+        <!-- Hedef Dil -->
+        <div>
+          <label class="form-label" for="target-lang">Hedef Dil</label>
+          <select class="form-select" id="target-lang">
+            <option value="en">🇬🇧 İngilizce</option>
+            <option value="de">🇩🇪 Almanca</option>
+            <option value="tr">🇹🇷 Türkçe</option>
+          </select>
+        </div>
+
+        <!-- Seviye Seçimi -->
+        <div>
+          <label class="form-label" for="cefr-level">Seviye (CEFR)</label>
+          <select class="form-select" id="cefr-level">
+            <option value="A1">A1 — Başlangıç</option>
+            <option value="A2">A2 — Temel</option>
+            <option value="B1">B1 — Orta Öncesi</option>
+            <option value="B2" selected>B2 — Orta</option>
+            <option value="C1">C1 — İleri</option>
+            <option value="C2">C2 — Ustalık</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Kaynak metin + Kullanıcı çeviri alanı -->
+      <div class="texts-row">
+
+        <!-- Sol: Kaynak metin (otomatik doldurulan örnek) -->
+        <div>
+          <div class="text-block-label">
+            <span class="form-label" style="margin-bottom:0">Kaynak Metin</span>
+            <span class="level-badge" id="badge-level">B2</span>
+          </div>
+          <div class="source-text-box" id="source-text-box">
+            <!-- JavaScript tarafından dil+seviyeye göre doldurulacak -->
+          </div>
+        </div>
+
+        <!-- Sağ: Kullanıcının çevirisini girdiği alan -->
+        <div>
+          <div class="text-block-label">
+            <span class="form-label" style="margin-bottom:0">Çeviriniz</span>
+          </div>
+          <textarea
+            class="form-textarea"
+            id="user-translation"
+            placeholder="Çevirinizi buraya yazın…"
+          ></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- =====================================================
+         ÖDEME BÖLÜMÜ
+         Alıcı Stellar adresi + İşlem gönder butonu
+    ===================================================== -->
+    <div class="card payment-section">
+      <p class="card-label">💫 Ödeme & Gönder</p>
+
+      <div style="margin-bottom: 18px;">
+        <label class="form-label" for="recipient-address">
+          Alıcı Stellar Adresi (Eğitmen / Çeviri Hizmeti)
+        </label>
+        <input
+          type="text"
+          class="form-input"
+          id="recipient-address"
+          placeholder="G… (Stellar Testnet Public Key)"
+          spellcheck="false"
+          autocomplete="off"
+        />
+        <p class="info-note">
+          ⚠️ Bu alan Stellar Testnet'te çalışır. Gerçek XLM gönderilmez.
+          Test için <a href="https://laboratory.stellar.org/#account-creator?network=test" target="_blank">Friendbot</a> ile hesap oluşturabilirsiniz.
+        </p>
+      </div>
+
+      <!-- İşlemi tetikleyen ana buton -->
+      <button class="btn btn-action" id="btn-send" disabled>
+        <span id="btn-send-icon">⚡</span>
+        <span id="btn-send-text">Çeviriyi Gönder & 1 XLM Bahşiş Ver</span>
+      </button>
+    </div>
+
+    <!-- =====================================================
+         GERİ BİLDİRİM PANELİ
+         Başarılı/başarısız işlem sonucu burada gösterilir.
+    ===================================================== -->
+    <div class="card" id="feedback-panel">
+      <div class="feedback-icon" id="feedback-icon"></div>
+      <div class="feedback-title" id="feedback-title"></div>
+      <div class="feedback-message" id="feedback-message"></div>
+      <div id="feedback-tx-link"></div>
+    </div>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer>
+    LinguaChain &middot; Stellar Testnet &middot; Vibe Coding 3.0 × Stellar Journey to Mastery &middot;
+    <a href="https://stellar.org" target="_blank">stellar.org</a>
+  </footer>
+
+  <!-- =====================================================
+       JAVASCRIPT
+       Tüm uygulama mantığı: Freighter bağlantısı, Horizon sorgusu,
+       Stellar işlemi, UI yönetimi.
+  ===================================================== -->
+  <script>
+  // =====================================================
+  // BÖLÜM 1: SABİTLER VE BAŞLANGIÇ AYARLARI
+  // =====================================================
+
+  // Stellar Testnet Horizon API endpoint'i
+  const HORIZON_URL = "https://horizon-testnet.stellar.org";
+
+  // Stellar SDK ile Testnet'e bağlı bir Sunucu (Server) nesnesi oluşturuyoruz.
+  // Bu nesne Horizon API ile iletişim kurmamızı sağlar.
+  const server = new StellarSdk.Horizon.Server(HORIZON_URL);
+
+  // Stellar'ın Testnet Network Passphrase'i — işlemleri imzalarken kullanılır.
+  const NETWORK_PASSPHRASE = StellarSdk.Networks.TESTNET;
+
+  // Gönderilecek sabit XLM miktarı (sembolik bahşiş)
+  const TIP_AMOUNT = "1";
+
+  // Kullanıcının bağlı cüzdan public key'ini saklayan değişken
+  let connectedPublicKey = null;
+
+  // =====================================================
+  // BÖLÜM 2: ÖRNEK METİNLER VERİ TABANI
+  // Her dil + her seviye kombinasyonu için farklı örnek metin.
+  // Seçimler değiştiğinde bu veriden metin çekilir.
+  // =====================================================
+  const SAMPLE_TEXTS = {
+    tr: {
+      A1: "Merhaba! Benim adım Ali. Ben bir öğrenciyim. Okulum güzel.",
+      A2: "Her sabah erken kalkarım ve kahvaltı yaparım. Sonra okula giderim. Öğleden sonra arkadaşlarımla oynamayı severim.",
+      B1: "Teknoloji hayatımızı kolaylaştırıyor. Artık alışverişi internetten yapabiliyoruz ve arkadaşlarımızla çevrimiçi iletişim kurabiliyoruz.",
+      B2: "Sürdürülebilir enerji kaynakları, iklim değişikliğiyle mücadelede kritik bir rol oynamaktadır. Güneş ve rüzgar enerjisi, fosil yakıtlara alternatif çözümler sunmaktadır.",
+      C1: "Yapay zeka ve makine öğrenmesi algoritmaları, veri biliminin temel taşlarını oluşturmaktadır. Bu teknolojilerin etik boyutları, toplumsal dönüşüm üzerindeki etkileri açısından titizlikle değerlendirilmelidir.",
+      C2: "Postmodern edebiyatta anlatıcının güvenilmezliği, okuyucu ile metin arasındaki diyalektik ilişkiyi yeniden tanımlamaktadır. Bu bağlamda Roland Barthes'ın 'yazarın ölümü' kavramı, yorumbilgisel açıdan paradigmatik bir öneme sahiptir."
+    },
+    en: {
+      A1: "Hello! My name is Emma. I am a student. I like cats and dogs.",
+      A2: "Every morning I wake up at seven o'clock. I eat breakfast and then I go to school. I study English and mathematics.",
+      B1: "Social media has changed the way people communicate. Many people use platforms like Instagram and Twitter to share their daily lives and opinions.",
+      B2: "Globalization has brought both opportunities and challenges to developing economies. While it has accelerated economic growth, it has also widened the gap between the rich and the poor.",
+      C1: "The proliferation of digital media has fundamentally altered the landscape of journalism, compelling traditional outlets to adapt their revenue models and editorial practices to remain relevant in an increasingly fragmented media environment.",
+      C2: "The epistemological implications of quantum mechanics challenge classical notions of determinism and objective reality. Heisenberg's uncertainty principle not only redefined the boundaries of scientific measurement but also prompted profound philosophical inquiry into the nature of observation and knowledge."
+    },
+    de: {
+      A1: "Guten Morgen! Ich heiße Klaus. Ich bin Schüler. Ich mag Fußball.",
+      A2: "Jeden Tag fahre ich mit dem Bus zur Schule. Ich lerne Deutsch und Mathematik. Nach der Schule mache ich Hausaufgaben.",
+      B1: "In Deutschland ist das Recycling sehr wichtig. Die meisten Haushalte trennen ihren Müll sorgfältig in verschiedene Kategorien, um die Umwelt zu schützen.",
+      B2: "Die Digitalisierung verändert die Arbeitswelt grundlegend. Viele traditionelle Berufsbilder wandeln sich und erfordern neue Kompetenzen, insbesondere im Bereich der digitalen Technologien.",
+      C1: "Die europäische Integration steht vor einer Reihe komplexer Herausforderungen, darunter wirtschaftliche Divergenzen zwischen Mitgliedsstaaten und die Frage nach der demokratischen Legitimität supranationaler Institutionen.",
+      C2: "Im Kontext der sprachphilosophischen Debatte des 20. Jahrhunderts stellt Wittgensteins Konzept der Sprachspiele eine fundamentale Revision des Verhältnisses zwischen Sprache, Bedeutung und Wirklichkeit dar, welches die analytische Tradition nachhaltig geprägt hat."
+    }
+  };
+
+  // =====================================================
+  // BÖLÜM 3: UI YARDIMCI FONKSİYONLARI
+  // DOM elemanlarını güncelleyen küçük fonksiyonlar.
+  // =====================================================
+
+  /**
+   * Bağlı / bağlı değil durumuna göre UI bileşenlerini günceller.
+   * @param {boolean} isConnected - Cüzdan bağlı mı?
+   * @param {string}  pubKey      - Bağlıysa kullanıcının Public Key'i
+   */
+  function updateConnectionUI(isConnected, pubKey = "") {
+    const connectBtn    = document.getElementById("btn-connect");
+    const disconnectBtn = document.getElementById("btn-disconnect");
+    const walletCard    = document.getElementById("wallet-card");
+    const sendBtn       = document.getElementById("btn-send");
+
+    if (isConnected) {
+      // Connect butonunu gizle, Disconnect'i göster
+      connectBtn.style.display    = "none";
+      disconnectBtn.style.display = "inline-flex";
+
+      // Cüzdan kartını görünür yap (animasyon için CSS class eklenir)
+      walletCard.classList.add("visible");
+
+      // Public Key'i göster: ilk 8 + ... + son 8 karakter vurgulanır
+      const first = pubKey.slice(0, 8);
+      const last  = pubKey.slice(-8);
+      const mid   = pubKey.slice(8, -8);
+      document.getElementById("wallet-pubkey-display").innerHTML =
+        `<span class="key-highlight">${first}</span>${mid}<span class="key-highlight">${last}</span>`;
+
+      // Gönder butonunu aktif et
+      sendBtn.disabled = false;
+    } else {
+      // Cüzdan bağlı değil — her şeyi sıfırla
+      connectBtn.style.display    = "inline-flex";
+      disconnectBtn.style.display = "none";
+      walletCard.classList.remove("visible");
+      sendBtn.disabled = true;
+      document.getElementById("wallet-balance-display").textContent = "... XLM";
+    }
+  }
+
+  /**
+   * Geri Bildirim Paneli'ni günceller.
+   * @param {"success"|"error"|"hidden"} type - Panel tipi
+   * @param {string} title   - Panel başlığı
+   * @param {string} message - Açıklama metni
+   * @param {string} txHash  - (Opsiyonel) İşlem hash'i
+   */
+  function showFeedback(type, title, message, txHash = "") {
+    const panel     = document.getElementById("feedback-panel");
+    const icon      = document.getElementById("feedback-icon");
+    const titleEl   = document.getElementById("feedback-title");
+    const msgEl     = document.getElementById("feedback-message");
+    const linkEl    = document.getElementById("feedback-tx-link");
+
+    if (type === "hidden") {
+      // Paneli gizle
+      panel.classList.remove("visible");
+      panel.classList.remove("feedback-success", "feedback-error");
+      return;
+    }
+
+    // Önceki tip class'larını temizle
+    panel.classList.remove("feedback-success", "feedback-error");
+
+    if (type === "success") {
+      panel.classList.add("feedback-success");
+      icon.textContent  = "✅";
+      titleEl.textContent = title;
+      msgEl.textContent   = message;
+
+      // İşlem hash'i varsa tıklanabilir link ekle
+      if (txHash) {
+        linkEl.innerHTML = `
+          <a
+            class="tx-link"
+            href="https://stellar.expert/explorer/testnet/tx/${txHash}"
+            target="_blank"
+            rel="noopener"
+          >
+            🔍 İşlemi Görüntüle: ${txHash.slice(0,12)}…${txHash.slice(-8)}
+          </a>`;
+      } else {
+        linkEl.innerHTML = "";
+      }
+    } else {
+      // Hata durumu
+      panel.classList.add("feedback-error");
+      icon.textContent    = "❌";
+      titleEl.textContent = title;
+      msgEl.textContent   = message;
+      linkEl.innerHTML    = "";
+    }
+
+    panel.classList.add("visible");
+
+    // Paneli ekrana kaydır
+    panel.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }
+
+  /**
+   * Gönder butonunu yükleme / normal durumuna geçirir.
+   * @param {boolean} isLoading
+   */
+  function setLoadingState(isLoading) {
+    const btn      = document.getElementById("btn-send");
+    const iconEl   = document.getElementById("btn-send-icon");
+    const textEl   = document.getElementById("btn-send-text");
+
+    btn.disabled = isLoading;
+
+    if (isLoading) {
+      iconEl.outerHTML = `<div class="spinner" id="btn-send-icon"></div>`;
+      textEl.textContent = "İşlem Gönderiliyor…";
+    } else {
+      document.getElementById("btn-send-icon").outerHTML =
+        `<span id="btn-send-icon">⚡</span>`;
+      textEl.textContent = "Çeviriyi Gönder & 1 XLM Bahşiş Ver";
+    }
+  }
+
+  // =====================================================
+  // BÖLÜM 4: ÖRNEK METİN GÜNCELLEME
+  // Kaynak dil veya seviye değiştiğinde otomatik olarak
+  // ilgili örnek metin veri tabanından çekilip gösterilir.
+  // =====================================================
+
+  function updateSourceText() {
+    const lang  = document.getElementById("source-lang").value;   // "tr", "en", "de"
+    const level = document.getElementById("cefr-level").value;    // "A1" ... "C2"
+
+    // İlgili metni SAMPLE_TEXTS'ten al
+    const text = SAMPLE_TEXTS[lang]?.[level] ?? "Bu seviye için metin bulunamadı.";
+
+    document.getElementById("source-text-box").textContent = text;
+    document.getElementById("badge-level").textContent     = level;
+  }
+
+  // Sayfa yüklendiğinde varsayılan metni ayarla
+  updateSourceText();
+
+  // Kaynak dil veya seviye değiştiğinde metni güncelle
+  document.getElementById("source-lang") .addEventListener("change", updateSourceText);
+  document.getElementById("cefr-level")  .addEventListener("change", updateSourceText);
+
+  // Hedef dil, kaynak dille aynı olamaz — basit koruma
+  document.getElementById("source-lang").addEventListener("change", function () {
+    const targetSelect = document.getElementById("target-lang");
+    if (targetSelect.value === this.value) {
+      // Farklı bir seçeneğe geç
+      const options = [...targetSelect.options];
+      const other   = options.find(o => o.value !== this.value);
+      if (other) targetSelect.value = other.value;
+    }
+  });
+
+  // =====================================================
+  // BÖLÜM 5: FREIGHTER CÜZDAN BAĞLANTISI
+  // Freighter API kullanılarak kullanıcıdan izin alınır
+  // ve Public Key elde edilir.
+  // =====================================================
+
+  document.getElementById("btn-connect").addEventListener("click", async () => {
+    try {
+      // 1. Freighter'ın tarayıcıda yüklü olup olmadığını kontrol et
+      const isInstalled = await window.freighterApi.isConnected();
+      if (!isInstalled) {
+        alert(
+          "Freighter cüzdanı bulunamadı.\n\n" +
+          "Lütfen https://freighter.app adresinden Freighter browser extension'ını yükleyin."
+        );
+        return;
+      }
+
+      // 2. Kullanıcıdan Freighter üzerinden erişim izni iste
+      //    Bu satır, kullanıcının cüzdanındaki "Allow" popup'ını açar.
+      await window.freighterApi.requestAccess();
+
+      // 3. Kullanıcının Public Key'ini al
+      const publicKey = await window.freighterApi.getPublicKey();
+      if (!publicKey) throw new Error("Public Key alınamadı.");
+
+      // 4. Değişkene kaydet — işlemler için daha sonra kullanacağız
+      connectedPublicKey = publicKey;
+
+      // 5. UI'yı bağlı duruma güncelle
+      updateConnectionUI(true, publicKey);
+
+      // 6. Horizon API'den güncel XLM bakiyesini çek
+      await fetchAndDisplayBalance(publicKey);
+
+    } catch (err) {
+      // Kullanıcı izin vermezse veya başka bir hata olursa
+      console.error("Bağlantı hatası:", err);
+      showFeedback("error", "Bağlantı Başarısız", `Cüzdan bağlanırken hata oluştu: ${err.message}`);
+    }
+  });
+
+  // =====================================================
+  // BÖLÜM 6: BAĞLANTI KESME (DISCONNECT)
+  // Yerel state temizlenerek UI sıfırlanır.
+  // Not: Freighter, oturumu uygulama tarafında kapatan
+  // resmi bir API sunmaz; biz sadece local state'i sıfırlarız.
+  // =====================================================
+
+  document.getElementById("btn-disconnect").addEventListener("click", () => {
+    connectedPublicKey = null;
+    updateConnectionUI(false);
+    showFeedback("hidden");
+    // Çeviri alanını da temizle
+    document.getElementById("user-translation").value = "";
+    document.getElementById("recipient-address").value = "";
+  });
+
+  // =====================================================
+  // BÖLÜM 7: HORIZON API'DEN BAKİYE ÇEKME
+  // Stellar'ın Testnet Horizon sunucusuna HTTP isteği atarak
+  // kullanıcının güncel XLM bakiyesini alır.
+  // =====================================================
+
+  async function fetchAndDisplayBalance(publicKey) {
+    try {
+      // Horizon API'ye account bilgisi için istek at
+      const account = await server.loadAccount(publicKey);
+
+      // Hesaptaki bakiyeler dizisinden native (XLM) olanı bul
+      const xlmBalance = account.balances.find(b => b.asset_type === "native");
+      const balance    = xlmBalance ? parseFloat(xlmBalance.balance).toFixed(2) : "0.00";
+
+      // UI'daki bakiye alanını güncelle
+      document.getElementById("wallet-balance-display").textContent = `${balance} XLM`;
+
+    } catch (err) {
+      // Hesap bulunamazsa (Testnet'te Friendbot ile fonlanmamış olabilir)
+      console.warn("Bakiye çekilemedi:", err);
+      document.getElementById("wallet-balance-display").textContent = "Hesap bulunamadı";
+    }
+  }
+
+  // =====================================================
+  // BÖLÜM 8: STELLAR ÖDEME İŞLEMİ
+  // Kullanıcı "Gönder" butonuna bastığında:
+  //   a) İşlem (Transaction) oluşturulur
+  //   b) Freighter aracılığıyla imzalanır
+  //   c) Horizon'a yayınlanır (submit)
+  // =====================================================
+
+  document.getElementById("btn-send").addEventListener("click", async () => {
+    // --- GİRDİ DOĞRULAMA ---
+
+    const recipientAddress  = document.getElementById("recipient-address").value.trim();
+    const userTranslation   = document.getElementById("user-translation").value.trim();
+
+    // Cüzdan bağlı mı?
+    if (!connectedPublicKey) {
+      showFeedback("error", "Cüzdan Bağlı Değil", "Lütfen önce Freighter cüzdanınızı bağlayın.");
+      return;
+    }
+
+    // Çeviri girilmiş mi?
+    if (!userTranslation) {
+      showFeedback("error", "Çeviri Eksik", "Lütfen önce çevirinizi girin.");
+      return;
+    }
+
+    // Alıcı adresi girilmiş mi?
+    if (!recipientAddress) {
+      showFeedback("error", "Alıcı Adresi Eksik", "Lütfen alıcının Stellar Testnet adresini girin.");
+      return;
+    }
+
+    // Stellar public key formatı geçerli mi? (G ile başlar, 56 karakter)
+    if (!StellarSdk.StrKey.isValidEd25519PublicKey(recipientAddress)) {
+      showFeedback("error", "Geçersiz Adres", "Girdiğiniz Stellar adresi geçerli değil. Adres 'G' ile başlamalı ve 56 karakter olmalıdır.");
+      return;
+    }
+
+    // Kullanıcı kendine göndermeye çalışıyor mu?
+    if (recipientAddress === connectedPublicKey) {
+      showFeedback("error", "Geçersiz Alıcı", "Kendinize XLM gönderemezsiniz.");
+      return;
+    }
+
+    // --- İŞLEM AKIŞI BAŞLIYOR ---
+
+    try {
+      setLoadingState(true);  // Butonu yükleme moduna al
+      showFeedback("hidden"); // Önceki bildirim varsa gizle
+
+      // 1. ADIM: Gönderenin hesap bilgilerini Horizon'dan çek.
+      //    Bu adım, işlem için gereken "sequence number" (sıra numarasını) almak için gereklidir.
+      //    Her Stellar işlemi, hesabın güncel sıra numarasını içermelidir.
+      const sourceAccount = await server.loadAccount(connectedPublicKey);
+
+      // 2. ADIM: İşlem (Transaction) oluştur.
+      //    TransactionBuilder ile işlem yapısını kuruyoruz:
+      //    - fee: İşlem ücreti (stroops cinsinden). fee_stats'tan en güncel değeri kullanabiliriz;
+      //           basitlik için burada 100 stroops (0.00001 XLM) kullanıyoruz.
+      //    - networkPassphrase: Hangi Stellar ağında olduğumuzu belirtir (Testnet vs Mainnet).
+      //    - addOperation: Payment (ödeme) işlemi ekler.
+      //    - setTimeout: İşlemin geçerlilik süresi (saniye). 30 saniye sonra geçersiz olur.
+      const transaction = new StellarSdk.TransactionBuilder(sourceAccount, {
+        fee: StellarSdk.BASE_FEE,            // Temel ücret (100 stroops)
+        networkPassphrase: NETWORK_PASSPHRASE // Testnet Passphrase
+      })
+        .addOperation(
+          // Payment operasyonu: belirtilen adrese XLM gönder
+          StellarSdk.Operation.payment({
+            destination: recipientAddress,          // Alıcı adresi
+            asset:       StellarSdk.Asset.native(), // Native asset = XLM
+            amount:      TIP_AMOUNT                 // "1" XLM
+          })
+        )
+        .addMemo(
+          // İşleme not (memo) ekle — blok zincirinde görünür
+          StellarSdk.Memo.text("LinguaChain tip")
+        )
+        .setTimeout(30)  // 30 saniye içinde gönderilmezse iptal
+        .build();
+
+      // 3. ADIM: İşlemi XDR (External Data Representation) formatına dönüştür.
+      //    Freighter API, imzalamak için XDR string alır.
+      const xdr = transaction.toXDR();
+
+      // 4. ADIM: Freighter aracılığıyla kullanıcıdan imzasını iste.
+      //    Bu satır, Freighter'ın imzalama popup'ını açar.
+      //    Kullanıcı "Sign" derse imzalanmış XDR döner.
+      const signedResult = await window.freighterApi.signTransaction(
+        xdr,
+        { network: "TESTNET" } // Freighter'a hangi ağda olduğumuzu bildiriyoruz
+      );
+
+      // Freighter'ın dönüş formatı: { signedTxXdr: "..." } veya doğrudan string
+      const signedXDR = signedResult.signedTxXdr ?? signedResult;
+
+      // 5. ADIM: İmzalanmış XDR'den Transaction nesnesini yeniden oluştur
+      const signedTransaction = new StellarSdk.Transaction(signedXDR, NETWORK_PASSPHRASE);
+
+      // 6. ADIM: İşlemi Stellar Testnet Horizon sunucusuna gönder (submit/yayınla).
+      //    Bu adım işlemi blok zincirine yazar.
+      const result = await server.submitTransaction(signedTransaction);
+
+      // 7. ADIM: Başarı durumu — işlem hash'ini al ve göster.
+      const txHash = result.hash;
+      console.log("İşlem başarılı! Hash:", txHash);
+
+      // Bakiyeyi güncelle (1 XLM eksildi)
+      await fetchAndDisplayBalance(connectedPublicKey);
+
+      // Başarı bildirimini göster
+      showFeedback(
+        "success",
+        "İşlem Başarılı! 🎉",
+        `${TIP_AMOUNT} XLM başarıyla gönderildi. Çeviriniz kaydedildi. Devam et, öğrenmeye devam et!`,
+        txHash
+      );
+
+    } catch (err) {
+      // --- HATA YÖNETİMİ ---
+      console.error("İşlem hatası:", err);
+
+      let errorMessage = "Bilinmeyen bir hata oluştu.";
+
+      // Stellar SDK'nın döndürdüğü hata nesnelerini işle
+      if (err.response && err.response.data && err.response.data.extras) {
+        // Horizon'dan dönen detaylı hata (örn. "op_underfunded" = yetersiz bakiye)
+        const extras = err.response.data.extras;
+        const resultCodes = extras.result_codes;
+        const opCode = resultCodes?.operations?.[0] ?? "bilinmiyor";
+
+        const errorMap = {
+          "op_underfunded":        "Yetersiz bakiye. Testnet için Friendbot'tan XLM alın.",
+          "op_no_destination":     "Alıcı hesap bulunamadı. Adres Testnet'te aktif değil.",
+          "op_bad_auth":           "İmzalama başarısız. Freighter üzerinden tekrar deneyin.",
+          "tx_bad_seq":            "Sıra numarası hatası. Sayfayı yenileyip tekrar deneyin.",
+          "op_line_full":          "Alıcının XLM limiti dolu.",
+          "tx_insufficient_fee":   "İşlem ücreti yetersiz.",
+        };
+
+        errorMessage = errorMap[opCode] ?? `Horizon hatası: ${opCode}`;
+      } else if (err.message?.includes("User declined")) {
+        // Kullanıcı Freighter'da "Reject" butonuna bastı
+        errorMessage = "İşlem iptal edildi. Freighter üzerinden onay vermediniz.";
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+
+      showFeedback("error", "İşlem Başarısız", errorMessage);
+    } finally {
+      // Her durumda butonu normal haline döndür
+      setLoadingState(false);
+    }
+  });
+
+  // =====================================================
+  // BÖLÜM 9: SAYFA YÜKLENDİĞİNDE OTOMATİK KONTROL
+  // Eğer Freighter daha önce bağlandıysa ve izin hâlâ
+  // geçerliyse, kullanıcıyı otomatik olarak bağlı göster.
+  // =====================================================
+  (async () => {
+    try {
+      // Freighter yüklü mü?
+      const isConnected = await window.freighterApi?.isConnected();
+      if (!isConnected) return; // Freighter yoksa çık
+
+      // Kullanıcı daha önce izin vermiş mi?
+      const publicKey = await window.freighterApi.getPublicKey();
+      if (publicKey) {
+        connectedPublicKey = publicKey;
+        updateConnectionUI(true, publicKey);
+        await fetchAndDisplayBalance(publicKey);
+      }
+    } catch {
+      // Otomatik bağlantı yoksa sessizce devam et
+    }
+  })();
+
+  </script>
+</body>
+</html>
