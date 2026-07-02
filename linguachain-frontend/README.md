@@ -21,11 +21,11 @@ LinguaChain is a decentralized application (dApp) built on the Stellar network u
 
 ## Proof of Work
 ### Product UI & Mobile Responsive
-![Product UI](assets/ui-screenshot.png)
-![Mobile View](assets/mobile-screenshot.png)
+![Product UI]( assets/ui-screenshot.png )
+![Mobile View]( assets/mobile-screenshot.png )
 
 ### Analytics & Monitoring Setup
-![Monitoring](assets/console-monitoring.png)
+![Monitoring]( assets/console-monitoring.png )
 
 ### User Wallet Interactions (10+)
 - [Transaction 1 Link](https://testnet.stellarchain.io/tx/...)
