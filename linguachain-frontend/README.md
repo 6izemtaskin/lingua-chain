@@ -33,6 +33,8 @@ LinguaChain is a decentralized application (dApp) built on the Stellar network u
 - [Transaction 9 Link](https://testnet.stellarchain.io/tx/...)
 - [Transaction 10 Link](https://testnet.stellarchain.io/tx/...)
 
+Note: Transaction links may expire over time due to Testnet data retention policies; refer to the demo video for successful on-chain verification proof.
+
 ### Basic User Feedback Summary
 | User ID | Suggestion | Status |
 | :--- | :--- | :--- |
