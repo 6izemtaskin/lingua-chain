@@ -3,7 +3,7 @@
 LinguaChain is a decentralized application (dApp) built on the Stellar network using Soroban smart contracts. It enables transparent and immutable certificate issuance for academic and community projects.
 
 ## Live Demo
-[Buraya Vercel/Netlify üzerinden aldığın canlı linki yapıştır]
+lingua-chain-tau.vercel.app
 
 ## Contract Deployment Address
 `CCLPB37ANXYEHITID62U6QC7Q7GRAHTS7UQVTTH6YR5AIXYJJGW3NNOR`
