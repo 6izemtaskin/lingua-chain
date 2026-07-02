@@ -55,14 +55,14 @@ https://youtu.be/qvjVU5xHcRw
 ### Visual Proofs
 
 **Product UI & Initial State:**
-![Product UI](assets/product-ui.jpg)
-![Initial State](assets/baslangic.jpg)
+![Product UI](assets/product-ui.png)
+![Initial State](assets/baslangic.png)
 
 **Desktop View:**
-![Desktop View](assets/pc-responsive.jpg)
+![Desktop View](assets/pc-responsive.png)
 
 **Wallet Interaction & Explorer:**
-![Wallet Interaction](assets/wallet-interaction.jpg)
+![Wallet Interaction](assets/wallet-interaction.png)
 
 **Monitoring & Feedback Setup:**
-![Monitoring](assets/feedback-summary.jpg)
+![Monitoring](assets/feedback-summary.png)
