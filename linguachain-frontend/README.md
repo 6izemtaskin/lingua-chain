@@ -1,4 +1,4 @@
-# LinguaChain
+# LinguaChain - Green Belt Submission  🚀
 
 LinguaChain is a decentralized application (dApp) built on the Stellar network using Soroban smart contracts. It enables transparent and immutable certificate issuance for academic and community projects.
 
