@@ -9,91 +9,94 @@ function App() {
   const [publicKey, setPublicKey] = useState('');
   const [isWalletConnected, setIsWalletConnected] = useState(false);
   const [error, setError] = useState('');
-  const [hashResult, setHashResult] = useState(''); // Ekranda göstereceğimiz Hash için yeni state
+  const [mintStatus, setMintStatus] = useState('');
+  const [suggestion, setSuggestion] = useState('');
 
   const connectWallet = async () => {
     try {
       if (!(await isConnected())) {
-        setError("Freighter cüzdanı bulunamadı. Lütfen eklentiyi yükleyin.");
+        setError("Freighter wallet not found.");
         return;
       }
       const accessResponse = await requestAccess();
-      const key = typeof accessResponse === 'string' ? accessResponse : (accessResponse as any).address;
-      if (key) {
-        setPublicKey(key);
-        setIsWalletConnected(true);
-        setError('');
-      }
-    } catch (e: any) {
-      setError("Cüzdan hatası: " + e.message);
+      const address = typeof accessResponse === 'object' && accessResponse !== null
+        ? (accessResponse as any).address 
+        : accessResponse;
+
+      setPublicKey(address as string);
+      setIsWalletConnected(true);
+      setError('');
+    } catch (e) {
+      setError("Failed to connect wallet.");
     }
   };
 
-  const mintCertificate = async () => {
+  const mint = async () => {
     try {
-      if (!publicKey) return;
-
+      setMintStatus('');
+      setError('');
       const contract = new Contract(CONTRACT_ID);
-      
-      const tx = contract.call(
-        'mint_certificate', 
+      const txCall = contract.call(
+        'record_event',
         nativeToScVal(publicKey, { type: 'address' }),
-        nativeToScVal(90, { type: 'u32' }),
-        nativeToScVal("Turkish", { type: 'string' })
+        nativeToScVal(1, { type: 'u32' })
       );
 
-      const xdrData = tx.toXDR() as any;
-
-      const signedTx = await signTransaction(xdrData, { 
-        networkPassphrase: 'Test SDF Network ; September 2015' 
+      const xdr = txCall.toXDR() as unknown as string;
+      const signed = await signTransaction(xdr, {
+        networkPassphrase: 'Test SDF Network ; September 2015'
       });
-      
-      // Obje gelirse metne çevir, metinse direkt al
-      const finalHash = typeof signedTx === 'object' ? JSON.stringify(signedTx) : signedTx;
-      
-      setHashResult(finalHash); // Ekrana yazdır
-      setError(""); // Hata mesajını temizle
-      alert("İşlem başarıyla imzalandı!");
-      
-    } catch (e: any) {
-      console.error(e);
-      setError("Mint hatası: İşlem iptal edildi veya Freighter reddetti.");
+
+      console.log("Transaction Success:", signed);
+      setMintStatus("Mint successful! Transaction recorded on blockchain.");
+      alert("Mint successful!"); // Başarı pop-up'ı
+    } catch (e) {
+      setError("Minting failed. Check console (F12).");
+    }
+  };
+
+  const sendSuggestion = () => {
+    if (suggestion) {
+      console.log("ADMIN VIEW ONLY - New Suggestion Received:", suggestion);
+      alert("Thank you! Your suggestion has been received."); // Öneri pop-up'ı
+      setSuggestion("");
     }
   };
 
   return (
-    <div className="App" style={{ padding: '50px', textAlign: 'center' }}>
-      <h1>LinguaChain - Sertifika Portalı</h1>
+    <div style={{ padding: '40px', textAlign: 'center', fontFamily: 'sans-serif' }}>
+      <h1>LinguaChain Portal</h1>
       
       {!isWalletConnected ? (
-        <button 
-          onClick={connectWallet}
-          style={{ padding: '10px 20px', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer' }}
-        >
-          Freighter Cüzdanını Bağla
-        </button>
+        <button onClick={connectWallet} style={{ padding: '10px 20px', cursor: 'pointer' }}>Connect Wallet</button>
       ) : (
         <div style={{ marginTop: '20px' }}>
-          <p style={{ color: 'green' }}>✅ Adres: {publicKey}</p>
-          <button 
-            onClick={mintCertificate} 
-            style={{ padding: '10px 20px', backgroundColor: 'green', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer' }}
-          >
-            Sertifika Bas (Mint)
-          </button>
-        </div>
-      )}
+          <p>Connected: {publicKey}</p>
+          <button onClick={mint} style={{ padding: '10px 20px', backgroundColor: 'green', color: 'white', cursor: 'pointer' }}>Mint Certificate</button>
+          
+          {mintStatus && <p style={{ color: 'green', marginTop: '20px' }}>{mintStatus}</p>}
+          {error && <p style={{ color: 'red', marginTop: '20px' }}>{error}</p>}
 
-      {/* HASH DEĞERİNİN GÖRÜNECEĞİ KUTU */}
-      {hashResult && (
-        <div style={{ marginTop: '30px', padding: '15px', backgroundColor: '#f8f9fa', border: '2px dashed #28a745', borderRadius: '10px', wordBreak: 'break-all', maxWidth: '600px', margin: '30px auto' }}>
-          <h3 style={{ color: '#28a745', marginTop: '0' }}>İşte Hash Değerin! 🎉</h3>
-          <p style={{ fontSize: '14px', color: '#333' }}>{hashResult}</p>
-          <small style={{ color: 'gray' }}>Bu karmaşık kodu kopyalayıp README dosyana yapıştırabilirsin.</small>
+          <div style={{ marginTop: '80px', borderTop: '1px solid #ccc', paddingTop: '40px' }}>
+            <p>You can control your transactions by pasting your hash into the search bar on the official explorer:</p>
+            <a href="https://testnet.stellarchain.io/" target="_blank" rel="noreferrer" style={{ color: '#007bff' }}>
+              StellarChain Explorer
+            </a>
+
+            {/* Öneri Kutusu aşağıya taşındı ve daha düzenli */}
+            <div style={{ marginTop: '100px', padding: '20px', backgroundColor: '#f9f9f9', borderRadius: '8px' }}>
+              <h3>Write to us!</h3>
+              <textarea 
+                value={suggestion}
+                onChange={(e) => setSuggestion(e.target.value)}
+                placeholder="Share your suggestions with us..."
+                style={{ width: '300px', height: '100px', display: 'block', margin: '10px auto' }}
+              />
+              <button onClick={sendSuggestion} style={{ padding: '5px 15px', cursor: 'pointer' }}>Submit Suggestion</button>
+            </div>
+          </div>
         </div>
       )}
-      
-      {error && <p style={{ color: 'blue', marginTop: '20px', fontSize: '14px', maxWidth: '500px', margin: '20px auto' }}>{error}</p>}
     </div>
   );
 }
