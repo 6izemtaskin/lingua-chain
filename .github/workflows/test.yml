@@ -17,8 +17,8 @@ jobs:
         run: |
           cd contracts/lingua-registry
           cargo build --target wasm32-unknown-unknown --release
-          # WASM dosyasını projenin kök dizinine (root) taşıyoruz
-          cp target/wasm32-unknown-unknown/release/*.wasm ../../lingua_registry.wasm
+          # Dosya nerede olursa olsun bulup root dizine kopyala
+          find . -name "*.wasm" -exec cp {} ../../lingua_registry.wasm \;
       - name: Run Contract Tests
         run: cd contracts && cargo test
 
