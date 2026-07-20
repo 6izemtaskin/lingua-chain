@@ -16,21 +16,22 @@ jobs:
 
       - name: Build Lingua Registry
         run: |
-          set -e
-          # Crate'i doğrudan manifest yoluyla derle (workspace target'ına yazması için)
+          # Klasörün içine girmeden, doğrudan manifest yoluyla derle
+          # Böylece target klasörü kök dizinde oluşur
           cargo build --manifest-path contracts/lingua-registry/Cargo.toml --target wasm32-unknown-unknown --release
-
-          # WASM dosyasını workspace'teki target klasöründe her nerede olursa olsun bul
-          wasm=$(find target -type f -name '*.wasm' | head -n1 || true)
-
+          
+          # HATA AYIKLAMA: target klasöründe neler var?
+          echo "Target klasörünün içeriği:"
+          find target -maxdepth 4 -name "*.wasm" -ls
+          
+          # WASM dosyasını bul ve kopyala
+          wasm=$(find target -name "*.wasm" | head -n1)
           if [ -z "$wasm" ]; then
-            echo "HATA: WASM dosyası bulunamadı! Debug için target listesi:"
-            find target -type f -maxdepth 6 -print
+            echo "HATA: .wasm dosyası üretilmedi!"
             exit 1
           fi
-
-          echo "Bulunan wasm: $wasm"
           cp "$wasm" lingua_registry.wasm
+          echo "Dosya kopyalandı: $wasm -> lingua_registry.wasm"
 
       - name: Run Contract Tests
         run: cd contracts && cargo test

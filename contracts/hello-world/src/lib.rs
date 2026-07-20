@@ -7,6 +7,7 @@ use soroban_sdk::{
 // Tireli isim, Rust'ın kütüphane modülü için varsayılan isimlendirmedir.
 // Eğer hala "unresolved" derse, kütüphanenin modül ismini bu şekilde çağırıyoruz:
 mod lingua_registry {
+    // Pipeline'da kök dizine kopyaladığımız dosyayı direkt burada çağırıyoruz
     soroban_sdk::contractimport!(file = "../../lingua_registry.wasm");
 }
 use lingua_registry::LinguaRegistryClient;
