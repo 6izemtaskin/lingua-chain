@@ -1,9 +1,32 @@
-name: Rust Tests
-on: [push]
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
 jobs:
-  test:
+  # 1. Kontrat Testleri
+  test-contract:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Run Tests
-        run: cargo test
+      - name: Install Rust
+        run: rustup target add wasm32-unknown-unknown
+      - name: Run Contract Tests
+        run: cd contracts && cargo test
+
+  # 2. Frontend Test ve Build
+  build-frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      - name: Install Dependencies
+        run: cd linguachain-frontend && npm install
+      - name: Build Frontend
+        run: cd linguachain-frontend && npm run build
