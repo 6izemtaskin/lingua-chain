@@ -7,17 +7,21 @@ on:
     branches: [ main ]
 
 jobs:
-  # 1. Kontrat Testleri
   test-contract:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - name: Install Rust
         run: rustup target add wasm32-unknown-unknown
+      - name: Build Lingua Registry
+        run: |
+          cd contracts/lingua-registry
+          cargo build --target wasm32-unknown-unknown --release
+          mkdir -p ../../target/wasm32-unknown-unknown/release/
+          cp target/wasm32-unknown-unknown/release/*.wasm ../../target/wasm32-unknown-unknown/release/
       - name: Run Contract Tests
         run: cd contracts && cargo test
 
-  # 2. Frontend Test ve Build
   build-frontend:
     runs-on: ubuntu-latest
     steps:
