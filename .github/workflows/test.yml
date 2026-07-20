@@ -16,8 +16,16 @@ jobs:
       - name: Build Lingua Registry
         run: |
           cd contracts/lingua-registry
+          # Build işlemini gerçekleştir
           cargo build --target wasm32-unknown-unknown --release
-          find . -name "*.wasm" -exec cp {} ../../lingua_registry.wasm \;
+          # WASM dosyasını dinamik olarak bul ve kök dizine kopyala
+          wasm_path=$(find target -type f -name '*.wasm' -print -quit)
+          if [ -z "$wasm_path" ]; then
+            echo "ERROR: wasm dosyası bulunamadı!"
+            ls -R target
+            exit 1
+          fi
+          cp "$wasm_path" ../../lingua_registry.wasm
       - name: Run Contract Tests
         run: cd contracts && cargo test
 
