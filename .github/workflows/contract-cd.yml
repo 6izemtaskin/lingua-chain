@@ -1,0 +1,87 @@
+name: Contract CD (Testnet)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "contracts/lingua-registry/**"
+      - ".github/workflows/contract-cd.yml"
+  workflow_dispatch: {}
+
+env:
+  SOROBAN_NETWORK: testnet
+  SOROBAN_RPC_URL: https://soroban-testnet.stellar.org
+  SOROBAN_NETWORK_PASSPHRASE: "Test SDF Network ; September 2015"
+
+jobs:
+  build-test-deploy:
+    name: Build, Test, and Deploy to Stellar Testnet
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: contracts/lingua-registry
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+
+      - name: Cache cargo registry
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            contracts/lingua-registry/target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('contracts/lingua-registry/Cargo.lock') }}
+
+      - name: Install Soroban CLI
+        run: cargo install --locked soroban-cli --version ^21
+
+      - name: Run contract tests
+        run: cargo test --release
+
+      - name: Build optimized WASM
+        run: |
+          soroban contract build
+          soroban contract optimize \
+            --wasm target/wasm32-unknown-unknown/release/lingua_registry.wasm
+
+      - name: Configure deployer identity
+        run: |
+          soroban keys add deployer \
+            --secret-key "${{ secrets.SOROBAN_DEPLOYER_SECRET_KEY }}"
+
+      - name: Deploy to Stellar Testnet
+        id: deploy
+        run: |
+          CONTRACT_ID=$(soroban contract deploy \
+            --wasm target/wasm32-unknown-unknown/release/lingua_registry.optimized.wasm \
+            --source deployer \
+            --network ${{ env.SOROBAN_NETWORK }} \
+            --rpc-url ${{ env.SOROBAN_RPC_URL }} \
+            --network-passphrase "${{ env.SOROBAN_NETWORK_PASSPHRASE }}")
+          echo "contract_id=$CONTRACT_ID" >> "$GITHUB_OUTPUT"
+          echo "Deployed contract: $CONTRACT_ID"
+
+      - name: Persist deployed contract ID
+        run: |
+          mkdir -p ${{ github.workspace }}/deployments
+          echo "{\"network\": \"testnet\", \"contractId\": \"${{ steps.deploy.outputs.contract_id }}\", \"deployedAt\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"}" \
+            > ${{ github.workspace }}/deployments/testnet.json
+
+      - name: Upload deployment record
+        uses: actions/upload-artifact@v4
+        with:
+          name: testnet-deployment
+          path: ${{ github.workspace }}/deployments/testnet.json
+          retention-days: 30
+
+      - name: Summary
+        run: |
+          echo "### Testnet Deployment" >> "$GITHUB_STEP_SUMMARY"
+          echo "Contract ID: \`${{ steps.deploy.outputs.contract_id }}\`" >> "$GITHUB_STEP_SUMMARY"
