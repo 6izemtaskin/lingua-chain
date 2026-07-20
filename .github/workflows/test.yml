@@ -1,18 +1,49 @@
-- name: Build Lingua Registry
-  run: |
-    rustup target add wasm32-unknown-unknown
+name: CI/CD Pipeline
 
-    # Build the crate via manifest-path so cargo writes to the workspace target directory
-    cargo build --manifest-path contracts/lingua-registry/Cargo.toml --target wasm32-unknown-unknown --release
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
-    # Find the first .wasm under the workspace target tree (covers release/ and release/deps/)
-    wasm=$(find target -type f -name '*.wasm' | head -n1 || true)
+jobs:
+  test-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install Rust
+        run: rustup target add wasm32-unknown-unknown
 
-    if [ -z "$wasm" ]; then
-      echo "No wasm found in target. Listing target for debugging:"
-      find target -type f -maxdepth 6 -print
-      exit 1
-    fi
+      - name: Build Lingua Registry
+        run: |
+          set -e
+          # Crate'i doğrudan manifest yoluyla derle (workspace target'ına yazması için)
+          cargo build --manifest-path contracts/lingua-registry/Cargo.toml --target wasm32-unknown-unknown --release
 
-    echo "Found wasm: $wasm"
-    cp "$wasm" lingua_registry.wasm
+          # WASM dosyasını workspace'teki target klasöründe her nerede olursa olsun bul
+          wasm=$(find target -type f -name '*.wasm' | head -n1 || true)
+
+          if [ -z "$wasm" ]; then
+            echo "HATA: WASM dosyası bulunamadı! Debug için target listesi:"
+            find target -type f -maxdepth 6 -print
+            exit 1
+          fi
+
+          echo "Bulunan wasm: $wasm"
+          cp "$wasm" lingua_registry.wasm
+
+      - name: Run Contract Tests
+        run: cd contracts && cargo test
+
+  build-frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      - name: Install Dependencies
+        run: cd linguachain-frontend && npm install
+      - name: Build Frontend
+        run: cd linguachain-frontend && npm run build
