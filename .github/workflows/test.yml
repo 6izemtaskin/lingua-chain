@@ -15,25 +15,20 @@ jobs:
         run: rustup target add wasm32-unknown-unknown
       - name: Build Lingua Registry
         run: |
-          set -e
-          # Build using the crate manifest so artifact goes to workspace target/...
+          # Build the crate using the manifest path so cargo writes to the workspace target directory
           cargo build --manifest-path contracts/lingua-registry/Cargo.toml --target wasm32-unknown-unknown --release
-
-          # Find the produced wasm
-          WASM=$(find target/wasm32-unknown-unknown/release -maxdepth 1 -name '*.wasm' -print -quit || true)
-          if [ -z "$WASM" ]; then
-            echo "WASM not found — diagnostic info:"
-            echo "workspace target listing:"
-            ls -la target || true
-            echo "wasm arch listing:"
-            ls -la target/wasm32-unknown-unknown/release || true
+          
+          # Find the produced wasm and copy it to the repo root consistently
+          wasm=$(ls target/wasm32-unknown-unknown/release/*.wasm 2>/dev/null | head -n1) || true
+          
+          if [ -z "$wasm" ]; then
+            echo "No wasm found in target/wasm32-unknown-unknown/release; listing target for debugging:"
+            find target -maxdepth 4 -type f -name '*.wasm' -print
             exit 1
           fi
-
-          # Kopyala repo köküne
-          cp "$WASM" lingua_registry.wasm
-          echo "Copied $WASM -> lingua_registry.wasm"
-
+          
+          cp "$wasm" lingua_registry.wasm
+          
       - name: Run Contract Tests
         run: cd contracts && cargo test
 
