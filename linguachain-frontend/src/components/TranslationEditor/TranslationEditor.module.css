@@ -1,0 +1,145 @@
+.editor {
+  max-width: 62rem;
+  margin: 0 auto;
+}
+
+.header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: var(--lc-space-3);
+}
+
+.eyebrow {
+  composes: lc-caption from "../../styles/global.css";
+}
+
+.prompt {
+  font-size: var(--lc-text-title);
+  font-family: var(--lc-font-display);
+  margin: var(--lc-space-1) 0 0;
+}
+
+/* --- The spread: verso (source) / spine / recto (translation) --------- */
+
+.spread {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1px 1fr;
+  border-top: var(--lc-rule-width) solid var(--lc-color-ink);
+  border-bottom: var(--lc-rule-width) solid var(--lc-color-ink);
+  background-color: var(--lc-color-paper-shade);
+}
+
+.spine {
+  background: linear-gradient(
+    to right,
+    transparent,
+    var(--lc-color-rule) 40%,
+    var(--lc-color-rule) 60%,
+    transparent
+  );
+}
+
+.page {
+  padding: var(--lc-space-4) var(--lc-space-3);
+  min-height: 20rem;
+}
+
+.pageLabel {
+  composes: lc-caption from "../../styles/global.css";
+  display: block;
+  margin-bottom: var(--lc-space-2);
+}
+
+.sourceText {
+  font-family: var(--lc-font-body);
+  font-size: var(--lc-text-body-lg);
+  font-style: italic;
+  color: var(--lc-color-ink);
+  white-space: pre-wrap;
+}
+
+.textarea {
+  width: 100%;
+  min-height: 16rem;
+  resize: vertical;
+  border: none;
+  background: transparent;
+  font-family: var(--lc-font-body);
+  font-size: var(--lc-text-body-lg);
+  line-height: var(--lc-leading-body);
+  color: var(--lc-color-ink);
+  padding: 0;
+}
+
+.textarea::placeholder {
+  color: var(--lc-color-ink-faint);
+  font-style: italic;
+}
+
+.textarea:focus {
+  outline: none;
+}
+
+/* --- Colophon: word count, status, submit ------------------------------ */
+
+.colophon {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: var(--lc-space-2);
+}
+
+.wordCount {
+  composes: lc-caption from "../../styles/global.css";
+}
+
+.status {
+  composes: lc-caption from "../../styles/global.css";
+  color: var(--lc-color-seal);
+}
+
+.submit {
+  font-family: var(--lc-font-mono);
+  font-size: var(--lc-text-caption);
+  letter-spacing: var(--lc-tracking-caption);
+  text-transform: uppercase;
+  color: var(--lc-color-paper);
+  background-color: var(--lc-color-ink);
+  border: var(--lc-rule-width) solid var(--lc-color-ink);
+  padding: var(--lc-space-1) var(--lc-space-3);
+  cursor: pointer;
+  transition: background-color var(--lc-motion-quiet),
+    color var(--lc-motion-quiet);
+}
+
+.submit:hover:not(:disabled) {
+  background-color: var(--lc-color-seal);
+  border-color: var(--lc-color-seal);
+}
+
+.submit:disabled {
+  color: var(--lc-color-ink-faint);
+  background-color: transparent;
+  border-color: var(--lc-color-rule);
+  cursor: not-allowed;
+}
+
+.error {
+  composes: lc-caption from "../../styles/global.css";
+  color: var(--lc-color-error);
+  margin-top: var(--lc-space-1);
+}
+
+@media (max-width: 40rem) {
+  .spread {
+    grid-template-columns: 1fr;
+  }
+  .spine {
+    display: none;
+  }
+  .page + .page {
+    border-top: var(--lc-rule-width) solid var(--lc-color-rule);
+  }
+}

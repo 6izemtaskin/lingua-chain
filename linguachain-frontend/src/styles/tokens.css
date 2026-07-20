@@ -1,0 +1,83 @@
+/**
+ * LinguaChain Design System — Tokens
+ * ------------------------------------------------------------------
+ * Direction: an editorial, literary-magazine register for a product
+ * about translation and on-chain certification. The visual language
+ * borrows from bilingual manuscript editions and scholarly annotation
+ * (marginalia, seals, ledgers) rather than generic "crypto dashboard"
+ * or "SaaS card grid" conventions.
+ *
+ * Signature elements:
+ *  1. The wax-seal verification mark (circular, hash set in small
+ *     caps around the rim) used wherever a certificate is confirmed
+ *     on-chain — the one place we spend real ornamentation.
+ *  2. The verso/recto (facing-page) layout for translation work,
+ *     with a printed "spine" gutter — treating a translation like
+ *     an open bilingual edition, not a form.
+ *
+ * Everything else is intentionally quiet: hairline rules, no shadows,
+ * no border-radius outside the seal itself.
+ * ------------------------------------------------------------------
+ */
+
+@import url("https://fonts.googleapis.com/css2?family=Libre+Caslon+Display&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&family=IBM+Plex+Mono:wght@400;500&display=swap");
+
+:root {
+  /* --- Color: bone paper, iron-gall ink, oxblood seal, verdigris ---- */
+  --lc-color-paper: #f2efe6;
+  --lc-color-paper-shade: #e7e1d1;
+  --lc-color-ink: #1c1b18;
+  --lc-color-ink-soft: #55524a;
+  --lc-color-ink-faint: #8a8577;
+  --lc-color-rule: #d3cdb9;
+
+  --lc-color-seal: #6e1e24; /* verified / certified */
+  --lc-color-seal-ink: #f2efe6; /* text set against the seal */
+  --lc-color-verdigris: #435449; /* draft / in-progress state */
+  --lc-color-gold: #a9863f; /* ornamental ring, used sparingly */
+
+  --lc-color-error: #8a2e1f;
+
+  /* --- Type ---------------------------------------------------------- */
+  --lc-font-display: "Libre Caslon Display", "Iowan Old Style", serif;
+  --lc-font-body: "Newsreader", "Iowan Old Style", serif;
+  --lc-font-mono: "IBM Plex Mono", ui-monospace, monospace;
+
+  --lc-text-display-lg: 3.25rem;
+  --lc-text-display: 2.25rem;
+  --lc-text-title: 1.5rem;
+  --lc-text-body-lg: 1.1875rem;
+  --lc-text-body: 1.0625rem;
+  --lc-text-small: 0.9375rem;
+  --lc-text-caption: 0.75rem;
+
+  --lc-leading-tight: 1.15;
+  --lc-leading-title: 1.3;
+  --lc-leading-body: 1.65;
+
+  --lc-tracking-caption: 0.08em;
+  --lc-tracking-seal: 0.22em;
+
+  /* --- Space (8px base) ----------------------------------------------- */
+  --lc-space-1: 0.5rem;
+  --lc-space-2: 1rem;
+  --lc-space-3: 1.5rem;
+  --lc-space-4: 2rem;
+  --lc-space-6: 3rem;
+  --lc-space-8: 4rem;
+
+  /* --- Structure -------------------------------------------------------*/
+  --lc-rule-width: 1px;
+  --lc-content-measure: 42rem; /* comfortable reading line length */
+  --lc-margin-rail: 15rem; /* marginalia / annotation column */
+
+  --lc-motion-quiet: 180ms ease-out;
+  --lc-motion-deliberate: 320ms cubic-bezier(0.2, 0.6, 0.2, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --lc-motion-quiet: 0ms;
+    --lc-motion-deliberate: 0ms;
+  }
+}

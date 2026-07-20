@@ -1,0 +1,112 @@
+.card {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: start;
+  gap: var(--lc-space-4);
+  max-width: 34rem;
+  padding: var(--lc-space-4) var(--lc-space-4) var(--lc-space-3);
+  background-color: var(--lc-color-paper-shade);
+  border: var(--lc-rule-width) solid var(--lc-color-rule);
+}
+
+.eyebrow {
+  composes: lc-caption from "../../styles/global.css";
+  display: block;
+  margin-bottom: var(--lc-space-1);
+}
+
+.title {
+  font-size: var(--lc-text-title);
+  line-height: var(--lc-leading-title);
+  margin-bottom: var(--lc-space-3);
+}
+
+.metaList {
+  display: grid;
+  gap: var(--lc-space-1);
+  margin-bottom: var(--lc-space-3);
+}
+
+.metaRow {
+  display: flex;
+  align-items: baseline;
+  gap: var(--lc-space-2);
+}
+
+.metaLabel {
+  composes: lc-caption from "../../styles/global.css";
+  min-width: 6.5rem;
+}
+
+.metaValue {
+  font-family: var(--lc-font-mono);
+  font-size: var(--lc-text-small);
+  color: var(--lc-color-ink);
+  word-break: break-all;
+}
+
+.score {
+  font-family: var(--lc-font-display);
+  font-size: var(--lc-text-display);
+  line-height: 1;
+}
+
+.scoreUnit {
+  composes: lc-caption from "../../styles/global.css";
+  margin-left: var(--lc-space-1);
+}
+
+.footRule {
+  composes: lc-rule from "../../styles/global.css";
+  margin: var(--lc-space-3) 0 var(--lc-space-2);
+}
+
+.explorerLink {
+  composes: lc-caption from "../../styles/global.css";
+  color: var(--lc-color-ink-soft);
+  text-decoration: none;
+  border-bottom: var(--lc-rule-width) solid var(--lc-color-ink-faint);
+  padding-bottom: 1px;
+  transition: color var(--lc-motion-quiet), border-color var(--lc-motion-quiet);
+}
+
+.explorerLink:hover {
+  color: var(--lc-color-seal);
+  border-color: var(--lc-color-seal);
+}
+
+/* --- The seal: the one ornamental element in the system --------------- */
+
+.seal {
+  width: 6.5rem;
+  height: 6.5rem;
+  flex-shrink: 0;
+}
+
+.sealRing {
+  fill: none;
+  stroke: var(--lc-color-gold);
+  stroke-width: 0.75;
+}
+
+.sealDisc {
+  fill: var(--lc-color-seal);
+}
+
+.sealRingText {
+  fill: var(--lc-color-paper);
+  font-family: var(--lc-font-mono);
+  font-size: 5.4px;
+  letter-spacing: 2.5px;
+}
+
+.sealGlyph {
+  fill: var(--lc-color-seal-ink);
+  font-family: var(--lc-font-display);
+  font-size: 20px;
+}
+
+.sealPending {
+  fill: var(--lc-color-verdigris);
+}
