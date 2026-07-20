@@ -18,7 +18,7 @@ jobs:
           cd contracts/lingua-registry
           cargo build --target wasm32-unknown-unknown --release
           # Kontratın kendi klasöründeki wasm dosyasını bul ve projenin kök dizinine taşı
-          cp target/wasm32-unknown-unknown/release/lingua_registry.wasm ../../lingua_registry.wasm
+         cp target/wasm32-unknown-unknown/release/*.wasm ../../lingua_registry.wasm
       - name: Run Contract Tests
         run: cd contracts && cargo test
 
