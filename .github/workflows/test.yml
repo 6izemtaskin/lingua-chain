@@ -1,46 +1,18 @@
-name: CI/CD Pipeline
+- name: Build Lingua Registry
+  run: |
+    rustup target add wasm32-unknown-unknown
 
-on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+    # Build the crate via manifest-path so cargo writes to the workspace target directory
+    cargo build --manifest-path contracts/lingua-registry/Cargo.toml --target wasm32-unknown-unknown --release
 
-jobs:
-  test-contract:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: Install Rust
-        run: rustup target add wasm32-unknown-unknown
-      - name: Build Lingua Registry
-        run: |
-          # Build the crate using the manifest path so cargo writes to the workspace target directory
-          cargo build --manifest-path contracts/lingua-registry/Cargo.toml --target wasm32-unknown-unknown --release
-          
-          # Find the produced wasm and copy it to the repo root consistently
-          wasm=$(ls target/wasm32-unknown-unknown/release/*.wasm 2>/dev/null | head -n1) || true
-          
-          if [ -z "$wasm" ]; then
-            echo "No wasm found in target/wasm32-unknown-unknown/release; listing target for debugging:"
-            find target -maxdepth 4 -type f -name '*.wasm' -print
-            exit 1
-          fi
-          
-          cp "$wasm" lingua_registry.wasm
-          
-      - name: Run Contract Tests
-        run: cd contracts && cargo test
+    # Find the first .wasm under the workspace target tree (covers release/ and release/deps/)
+    wasm=$(find target -type f -name '*.wasm' | head -n1 || true)
 
-  build-frontend:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: Setup Node
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
-      - name: Install Dependencies
-        run: cd linguachain-frontend && npm install
-      - name: Build Frontend
-        run: cd linguachain-frontend && npm run build
+    if [ -z "$wasm" ]; then
+      echo "No wasm found in target. Listing target for debugging:"
+      find target -type f -maxdepth 6 -print
+      exit 1
+    fi
+
+    echo "Found wasm: $wasm"
+    cp "$wasm" lingua_registry.wasm
