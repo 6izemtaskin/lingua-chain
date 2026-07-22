@@ -11,25 +11,22 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      
       - name: Install Rust
         run: rustup target add wasm32-unknown-unknown
 
       - name: Build Lingua Registry
         run: |
-          # Manifest yoluyla kök dizinden derle
           cargo build --manifest-path contracts/lingua-registry/Cargo.toml --target wasm32-unknown-unknown --release
           
-          # WASM dosyasını workspace'in target ağacı içerisinde nerede olursa olsun bul
-          wasm_path=$(find target -type f -name '*.wasm' | head -n1 || true)
+          WASM_PATH=$(find . -type f -name "*.wasm" | grep "wasm32-unknown-unknown/release" | head -n1)
           
-          if [ -z "$wasm_path" ]; then
-            echo "HATA: WASM dosyası bulunamadı! Target içeriği:"
-            find target -type f -maxdepth 4 -print
+          if [ -z "$WASM_PATH" ]; then
+            echo "HATA: .wasm dosyası bulunamadı!"
             exit 1
           fi
           
-          echo "Bulunan WASM yolu: $wasm_path"
-          cp "$wasm_path" lingua_registry.wasm
+          cp "$WASM_PATH" lingua_registry.wasm
 
       - name: Run Contract Tests
         run: cd contracts && cargo test
@@ -38,11 +35,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
           node-version: '18'
+          
       - name: Install Dependencies
         run: cd linguachain-frontend && npm install
+        
       - name: Build Frontend
         run: cd linguachain-frontend && npm run build
