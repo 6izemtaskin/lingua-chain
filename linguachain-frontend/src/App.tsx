@@ -51,29 +51,40 @@ export default function App() {
 const handleSubmit = async () => {
     setStatus('loading');
     
-    const userWords = translation.trim().split(/\s+/).filter(w => w.length > 0);
-    const originalWords = (activeText as any).expected?.split(/\s+/).filter((w: string) => w.length > 0) || [];
+    const userWords = translation.trim().toLowerCase().split(/\s+/).filter(w => w.length > 0);
+    const originalWords = (activeText as any).expected?.toLowerCase().split(/\s+/).filter((w: string) => w.length > 0) || [];
     
-    // AKADEMİK PUANLAMA MANTIĞI
-    let calculatedScore = 0;
-    if (userWords.length === 0 || userWords.length < (originalWords.length * 0.3)) {
-      calculatedScore = 0; // Çok kısa çeviriler akademik olarak geçersizdir
-    } else {
+    let calculatedScore = 80;
+    if (userWords.length > 0 && originalWords.length > 0) {
       let matchCount = 0;
-      userWords.forEach((word, index) => {
-        if (originalWords[index] && word.toLowerCase() === originalWords[index].toLowerCase()) {
+      originalWords.forEach((word: string) => {
+        if (userWords.includes(word)) {
           matchCount++;
         }
       });
-      // Oranlama
-      calculatedScore = Math.round((matchCount / originalWords.length) * 100);
+
+      if (matchCount <= 10) {
+        calculatedScore = 80;
+      } else if (matchCount <= 20) {
+        calculatedScore = 80;
+      } else if (matchCount <= 30) {
+        calculatedScore = 80;
+      } else if (matchCount <= 40) {
+        calculatedScore = 85;
+      } else if (matchCount < 50) {
+        calculatedScore = 95;
+      } else if (matchCount >= 50) {
+        calculatedScore = 100;
+      } else {
+        calculatedScore = 100;
+      }
     }
+    
     setScore(calculatedScore);
 
-   // App.tsx içindeki handleSubmit fonksiyonunun try bloğu içini şu şekilde güncelle:
-// 74. satırdan itibaren burayı yapıştır:
     try {
-      const result = await registerTranslationOnChain(translation);
+      // Burayı güncelliyoruz: Hesaplanan skoru ve hedef dili de kontrata gönderiyoruz
+      const result = await registerTranslationOnChain(translation, calculatedScore, targetLang);
       setTxHash(result.hash);
       setStatus('success');
     } catch (e) {

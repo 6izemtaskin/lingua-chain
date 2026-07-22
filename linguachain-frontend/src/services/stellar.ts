@@ -7,7 +7,7 @@ const PASSPHRASE = "Test SDF Network ; September 2015";
 const horizonServer = new Horizon.Server("https://horizon-testnet.stellar.org");
 const sorobanServer = new rpc.Server("https://soroban-testnet.stellar.org");
 
-export const registerTranslationOnChain = async (translation: string) => {
+export const registerTranslationOnChain = async (translation: string, score: number, language: string) => {
   const connected = await isConnected();
   if (!connected) throw new Error("Freighter cüzdanına bağlanılamadı.");
 
@@ -21,12 +21,11 @@ export const registerTranslationOnChain = async (translation: string) => {
 
   const contract = new Contract(CONTRACT_ID);
   
-  // Kontratın asıl fonksiyonu olan mint_certificate ve beklediği parametreler eklendi
   const operation = contract.call(
     "mint_certificate",
     new Address(publicKey).toScVal(),
-    xdr.ScVal.scvU32(85),
-    xdr.ScVal.scvString("Turkish")
+    xdr.ScVal.scvU32(score),
+    xdr.ScVal.scvString(language)
   );
 
   let tx = new TransactionBuilder(sourceAccount, {
