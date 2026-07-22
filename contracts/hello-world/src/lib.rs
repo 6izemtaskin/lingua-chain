@@ -1,13 +1,9 @@
 #![no_std]
 use soroban_sdk::{
-    contract, contractimpl, contracttype,
-    symbol_short, Address, Env, String, Symbol, Vec,
+    contract, contractimpl, contracttype, symbol_short, Address, Env, String, Symbol, Vec,
 };
 
-// Tireli isim, Rust'ın kütüphane modülü için varsayılan isimlendirmedir.
-// Eğer hala "unresolved" derse, kütüphanenin modül ismini bu şekilde çağırıyoruz:
 mod lingua_registry {
-    // Pipeline'da kök dizine kopyaladığımız dosyayı direkt burada çağırıyoruz
     soroban_sdk::contractimport!(file = "../../lingua_registry.wasm");
 }
 use lingua_registry::Client as LinguaRegistryClient;
@@ -38,7 +34,6 @@ pub struct LinguaChainContract;
 
 #[contractimpl]
 impl LinguaChainContract {
-
     pub fn initialize(env: Env, admin: Address, registry: Address) {
         if env.storage().instance().has(&DataKey::Admin) {
             panic!("already_initialized");
@@ -80,7 +75,7 @@ impl LinguaChainContract {
         env.storage().persistent().set(&DataKey::OwnerTokens(recipient.clone()), &tokens);
         env.storage().instance().set(&DataKey::NextTokenId, &(token_id + 1));
 
-        // Registry çağrısı - Client burada oluşturuluyor
+        // Registry çağrısı
         let registry_addr: Address = env.storage().instance().get(&DataKey::RegistryAddress).unwrap();
         let registry_client = LinguaRegistryClient::new(&env, &registry_addr);
         registry_client.record_event(&recipient, &token_id);
