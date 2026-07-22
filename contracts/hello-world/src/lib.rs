@@ -10,7 +10,7 @@ mod lingua_registry {
     // Pipeline'da kök dizine kopyaladığımız dosyayı direkt burada çağırıyoruz
     soroban_sdk::contractimport!(file = "../../lingua_registry.wasm");
 }
-use lingua_registry::LinguaRegistryClient;
+use lingua_registry::Client as LinguaRegistryClient;
 
 #[contracttype]
 #[derive(Clone)]
