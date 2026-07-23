@@ -67,3 +67,6 @@ You can check our active feedback form here: [Buraya Google Form Linkini Yapış
 
 **5. Account Transaction History:**
 ![Account Transaction History](Screenshot%202026-07-23%20at%2003.02.00.png)
+
+**6. Smart Contract Transaction History:**
+![Smart Contract History](Screenshot%202026-07-23%20at%2003.31.48.png)
