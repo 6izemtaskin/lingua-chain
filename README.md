@@ -1,25 +1,29 @@
-# LinguaChain - Green Belt Submission  🚀
+# LinguaChain - Green Belt Submission 🚀
 
-LinguaChain is a decentralized application (dApp) built on the Stellar network using Soroban smart contracts. It enables transparent and immutable certificate issuance for academic and community projects.
+LinguaChain is a decentralized application (dApp) built on the Stellar network using Soroban smart contracts. It bridges the gap between language learning, literature, and Web3 technology. Users can translate texts and immediately mint their achievements as verifiable, on-chain certificates.
 
 ## Live Demo
-[Buraya Canlı Demo Vercel Linkini Yapıştır]
+https://lingua-chain-snowy.vercel.app/
 
 ## Contract Deployment Address
 `CCLPB37ANXYEHITID62U6QC7Q7GRAHTS7UQVTTH6YR5AIXYJJGW3NNOR`
 
 ## Features
 - **Wallet Integration**: Secure connection with Freighter wallet.
-- **Blockchain Minting**: On-chain certificate recording on Stellar Testnet using Soroban smart contracts.
-- **Admin Monitoring**: Built-in suggestion box for user feedback.
+- **AI-Enhanced Translation**: Translate literary texts with an intuitive dual-pane interface.
+- **Blockchain Minting**: On-chain certificate recording on Stellar Testnet using Soroban smart contracts (`mint_certificate`).
 - **Verification**: Real-time transaction tracking via StellarChain Explorer.
+- **Admin Monitoring**: Built-in suggestion box for user feedback.
 
 ## Technical Stack
 - **Frontend**: React.js, TypeScript
-- **Blockchain & Smart Contract**: Stellar Network (Soroban)
+- **Blockchain & Smart Contract**: Stellar Network (Soroban Testnet)
 - **Wallet**: Freighter API
 
-## Proof of Work
+## Demo Video
+https://youtu.be/ESL24MRmCQA
+
+## Proof of Work (Green Belt Requirements)
 
 ### User Feedback Form
 You can check our active feedback form here: [Buraya Google Form Linkini Yapıştır]
@@ -36,31 +40,30 @@ You can check our active feedback form here: [Buraya Google Form Linkini Yapış
 - [Transaction 9 Link](https://stellarchain.io/tx/Buraya_Islem_Hash_Yapistir)
 - [Transaction 10 Link](https://stellarchain.io/tx/Buraya_Islem_Hash_Yapistir)
 
-### Basic User Feedback Summary (Formdan gelen gerçek yanıtlar)
+### Basic User Feedback Summary
 | User / Wallet | Suggestion / Feedback | Status |
 | :--- | :--- | :--- |
-| `0x... (Kullanıcı Adı/Cüzdan)` | [Formdan gelen yorum buraya yazılacak] | Reviewed |
-| `0x... (Kullanıcı Adı/Cüzdan)` | [Formdan gelen yorum buraya yazılacak] | Reviewed |
-
-## Demo Video
-[Buraya YouTube Video Linkini Yapıştır]
+| `0x... [Kullanıcı Adı/Cüzdan]` | [Formdan gelen yorum buraya yazılacak] | Reviewed |
+| `0x... [Kullanıcı Adı/Cüzdan]` | [Formdan gelen yorum buraya yazılacak] | Reviewed |
 
 ## How to Run
 1. Clone the repository: `git clone https://github.com/6izemtaskin/lingua-chain.git`
 2. Install dependencies: `npm install`
-3. Start the project: `npm start`
+3. Start the project: `npm run dev`
 
-### Visual Proofs
+## Visual Proofs
 
-**Product UI & Initial State:**
-![Product UI](assets/product-ui.png)
-![Initial State](assets/baslangic.png)
+**1. Translation Interface:**
+![Translation Interface](Screenshot%202026-07-23%20at%2002.43.44.png)
 
-**Desktop View:**
-![Desktop View](assets/pc-responsive.png)
+**2. Wallet Interaction (Freighter):**
+![Wallet Interaction](Screenshot%202026-07-23%20at%2002.59.54.png)
 
-**Wallet Interaction & Explorer:**
-![Wallet Interaction](assets/wallet-interaction.png)
+**3. Digital Certificate Minted:**
+![Certificate](Screenshot%202026-07-23%20at%2003.03.10.png)
 
-**Monitoring & Feedback Setup:**
-![Monitoring](assets/feedback-summary.png)
+**4. Blockchain Verification (Stellar Testnet Explorer):**
+![Blockchain Verification](Screenshot%202026-07-23%20at%2003.01.30.png)
+
+**5. Account Transaction History:**
+![Account Transaction History](Screenshot%202026-07-23%20at%2003.02.00.png)
